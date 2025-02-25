@@ -42,4 +42,5 @@ jobs:
         password: ${{ secrets.PASSWORD_DEV }}  # 비밀번호
         port: ${{ secrets.PORT_DEV }}  # 포트
         script: |
-          bash ~/aws/start.sh  # dev 서버에서 실행할 스크립트
+          cd ~
+          echo "test" > ./test.log
