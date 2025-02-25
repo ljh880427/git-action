@@ -21,3 +21,6 @@ jobs:
         run: |
           echo $GITHUB_SHA
           echo $GITHUB_REPOSITORY
+
+      - name : 노출 방지용
+        run: ${{ secrets.HOST_MAIN }
