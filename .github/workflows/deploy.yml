@@ -14,5 +14,11 @@ jobs:
       - name: 다중 명령어 실행
         run: |
           echo "2025"
-          echo "2025"
-          echo "2025"
+          echo "2월"
+          echo "25일"
+
+      -name: github 내장 변수
+       run: |
+        echo $GITHUB_SHA
+        echo $GITHUB_REPOSITORY
+
