@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # 코드 체크아웃
+      uses: appleboy/ssh-action@v1.2.1
 
     - name: Set up SSH key for main server
       if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
@@ -24,7 +24,7 @@ jobs:
 
     - name: Executing remote SSH commands for main server
       if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.0.0
+      uses: appleboy/ssh-action@v1.2.1
       with:
         host: ${{ secrets.HOST_MAIN }}  # main 서버의 호스트
         username: ${{ secrets.USERNAME_MAIN }}  # 사용자명
@@ -35,7 +35,7 @@ jobs:
 
     - name: Executing remote SSH commands for dev branch
       if: github.ref == 'refs/heads/dev'  # dev 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.0.0
+      uses: appleboy/ssh-action@v1.2.1
       with:
         host: ${{ secrets.HOST_DEV }}  # dev 서버의 호스트
         username: ${{ secrets.USERNAME_DEV }}  # 사용자명
