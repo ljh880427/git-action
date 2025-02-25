@@ -10,3 +10,9 @@ jobs:
     steps:
       - name: 간단한 출력
         run: echo "안녕"
+
+      - name: 다중 명령어 실행
+        run: |
+          echo "2025"
+          echo "2025"
+          echo "2025"
