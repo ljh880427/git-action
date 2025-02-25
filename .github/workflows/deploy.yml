@@ -17,8 +17,7 @@ jobs:
           echo "2월"
           echo "25일"
 
-      -name: github 내장 변수
-       run: |
-        echo $GITHUB_SHA
-        echo $GITHUB_REPOSITORY
-
+      - name: github 내장 변수
+        run: |
+          echo $GITHUB_SHA
+          echo $GITHUB_REPOSITORY
