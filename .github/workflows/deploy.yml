@@ -1,46 +1,34 @@
-name: github auto-puller
+name: Deploy to EC2
 
-on: 
+on:
   push:
     branches:
-      - main  # main 브랜치에 push될 때
-      - dev   # dev 브랜치에 push될 때
-    
+      - main  # main 브랜치에 push될 때마다 트리거
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: appleboy/ssh-action@v1.2.1
+      # 1. GitHub 저장소의 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up SSH key for main server
-      if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY_MAIN }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.HOST_MAIN }} >> ~/.ssh/known_hosts  # 서버 호스트 확인
+      # 2. SSH 에이전트 설정
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}  # Secrets에 등록한 .pem 파일 사용
 
-    - name: Executing remote SSH commands for main server
-      if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.2.1
-      with:
-        host: ${{ secrets.HOST_MAIN }}  # main 서버의 호스트
-        username: ${{ secrets.USERNAME_MAIN }}  # 사용자명
-        private-key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}  # PEM 형식의 SSH 비공개 키 사용
-        port: ${{ secrets.PORT_MAIN }}  # 포트
-        script: |
-          bash ~/aws/start.sh  # main 서버에서 실행할 스크립트
-
-    - name: Executing remote SSH commands for dev branch
-      if: github.ref == 'refs/heads/dev'  # dev 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.2.1
-      with:
-        host: ${{ secrets.HOST_DEV }}  # dev 서버의 호스트
-        username: ${{ secrets.USERNAME_DEV }}  # 사용자명
-        password: ${{ secrets.PASSWORD_DEV }}  # 비밀번호
-        port: ${{ secrets.PORT_DEV }}  # 포트
-        script: |
-          cd ~
-          echo "test" > ./test.log 
+      # 3. EC2에 배포
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'EOF'
+            cd ${EC2_PATH}
+            touch abcde
+            # 애플리케이션 재시작 명령 추가 (필요시)
+          EOF
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_PATH: ${{ secrets.EC2_PATH }}
