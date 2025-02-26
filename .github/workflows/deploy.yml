@@ -43,4 +43,4 @@ jobs:
         port: ${{ secrets.PORT_DEV }}  # 포트
         script: |
           cd ~
-          echo "test" > ./test.log
+          echo "test" > ./test.log 
