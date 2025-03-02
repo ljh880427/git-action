@@ -24,7 +24,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${AWS_PROD_USER}@${AWS_PROD_HOST} << 'EOF'
             cd ~/aws  # 운영 서버의 지정된 경로로 이동
-            chmod -R 777 app log_deploy src start.sh
+            sudo chmod -R 777 app log_deploy src start.sh
             nohup ./start.sh > /dev/null 2>&1 &
 
           EOF
