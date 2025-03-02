@@ -50,6 +50,7 @@ jobs:
             chmod +x start.sh
             nohup ./start.sh &  # start.sh를 백그라운드에서 실행
             disown  # 프로세스를 현재 셸 세션과 분리
+            exit  # SSH 세션 종료
             # 개발 애플리케이션 재시작 명령 추가 (필요시)
           EOF
         env:
