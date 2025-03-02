@@ -24,8 +24,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${AWS_PROD_USER}@${AWS_PROD_HOST} << 'EOF'
             cd ~/aws  # 운영 서버의 지정된 경로로 이동
-            touch prod_deployment1  # 배포 확인용 빈 파일 생성 (테스트용)            
-            # 운영 애플리케이션 재시작 명령 추가 (필요시)
+            chmod 777 start.sh
+            nohup ./start.sh > /dev/null 2>&1 &
+
           EOF
         env:
           AWS_PROD_USER: ${{ secrets.AWS_PROD_USER }}  # 운영 서버 접속 계정
@@ -45,12 +46,10 @@ jobs:
       - name: Deploy to Development EC2  # 개발 서버에 배포 수행
         run: |
           sshpass -p "${DEV_PASSWORD}" ssh -p ${DEV_PORT} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_HOST} << 'EOF'
-            cd ~/aws  # 개발 서버의 지정된 경로로 이동
-            touch dev_deployment1  # 배포 확인용 빈 파일 생성 (테스트용)
-            chmod +x start.sh
+            cd ~/aws  # 개발 서버의 지정된 경로로 이동            
+            chmod 777 start.sh
             nohup ./start.sh > /dev/null 2>&1 &
             
-            # 개발 애플리케이션 재시작 명령 추가 (필요시)
           EOF
         env:
           DEV_USER: ${{ secrets.DEV_USER }}  # 개발 서버 접속 계정
