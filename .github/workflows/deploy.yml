@@ -44,12 +44,11 @@ jobs:
 
       - name: Deploy to Development EC2  # 개발 서버에 배포 수행
         run: |
-          sshpass -p "${DEV_PASSWORD}" ssh -p ${DEV_PORT} -o StrictHostKeyChecking=no -fn ${DEV_USER}@${DEV_HOST} << 'EOF'
+          sshpass -p "${DEV_PASSWORD}" ssh -p ${DEV_PORT} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_HOST} << 'EOF'
             cd ~/aws  # 개발 서버의 지정된 경로로 이동
             touch dev_deployment1  # 배포 확인용 빈 파일 생성 (테스트용)
             chmod +x start.sh
-            nohup ./start.sh &  # start.sh를 백그라운드에서 실행
-            disown  # 프로세스를 현재 셸 세션과 분리
+            nohup ./start.sh > /dev/null 2>&1 &
             
             # 개발 애플리케이션 재시작 명령 추가 (필요시)
           EOF
