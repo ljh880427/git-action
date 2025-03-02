@@ -1,46 +1,58 @@
-name: github auto-puller
+name: Deploy to EC2  # EC2 서버에 애플리케이션을 배포하는 GitHub Actions 워크플로우
 
-on: 
+on:
   push:
     branches:
-      - main  # main 브랜치에 push될 때
-      - dev   # dev 브랜치에 push될 때
-    
+      - main  # 'main' 브랜치에 push 발생 시 운영 서버 배포
+      - dev   # 'dev' 브랜치에 push 발생 시 개발 서버 배포
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'  # 'main' 브랜치에서 실행될 경우에만 수행
+    runs-on: ubuntu-latest  # 실행 환경 지정
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3  # 코드 체크아웃
+      - name: Checkout code  # 최신 코드 가져오기
+        uses: actions/checkout@v2
 
-    - name: Set up SSH key for main server
-      if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY_MAIN }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.HOST_MAIN }} >> ~/.ssh/known_hosts  # 서버 호스트 확인
+      - name: Setup SSH  # SSH 키 설정 (AWS EC2에 접근하기 위해 사용)
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
 
-    - name: Executing remote SSH commands for main server
-      if: github.ref == 'refs/heads/main'  # main 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.HOST_MAIN }}  # main 서버의 호스트
-        username: ${{ secrets.USERNAME_MAIN }}  # 사용자명
-        private-key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}  # PEM 형식의 SSH 비공개 키 사용
-        port: ${{ secrets.PORT_MAIN }}  # 포트
-        script: |
-          bash ~/aws/start.sh  # main 서버에서 실행할 스크립트
+      - name: Deploy to Production EC2  # 운영 서버에 배포 수행
+        run: |
+          ssh -o StrictHostKeyChecking=no ${AWS_PROD_USER}@${AWS_PROD_HOST} << 'EOF'
+            cd ${AWS_PROD_PATH}  # 운영 서버의 지정된 경로로 이동
+            touch prod_deployment  # 배포 확인용 빈 파일 생성 (테스트용)
+            # 운영 애플리케이션 재시작 명령 추가 (필요시)
+          EOF
+        env:
+          AWS_PROD_USER: ${{ secrets.AWS_PROD_USER }}  # 운영 서버 접속 계정
+          AWS_PROD_HOST: ${{ secrets.AWS_PROD_HOST }}  # 운영 서버 호스트
+          AWS_PROD_PATH: ${{ secrets.AWS_PROD_PATH }}  # 운영 서버의 애플리케이션 경로
 
-    - name: Executing remote SSH commands for dev branch
-      if: github.ref == 'refs/heads/dev'  # dev 브랜치에 push된 경우
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.HOST_DEV }}  # dev 서버의 호스트
-        username: ${{ secrets.USERNAME_DEV }}  # 사용자명
-        password: ${{ secrets.PASSWORD_DEV }}  # 비밀번호
-        port: ${{ secrets.PORT_DEV }}  # 포트
-        script: |
-          cd ~
-          echo "test" > ./test.log
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'  # 'dev' 브랜치에서 실행될 경우에만 수행
+    runs-on: ubuntu-latest  # 실행 환경 지정
+
+    steps:
+      - name: Checkout code  # 최신 코드 가져오기
+        uses: actions/checkout@v2
+
+      - name: Install sshpass  # 비밀번호 기반 SSH 접속을 위한 sshpass 설치
+        run: sudo apt-get install -y sshpass
+
+      - name: Deploy to Development EC2  # 개발 서버에 배포 수행
+        run: |
+          sshpass -p "${DEV_PASSWORD}" ssh -p ${DEV_PORT} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_HOST} << 'EOF'
+            cd ${DEV_PATH}  # 개발 서버의 지정된 경로로 이동
+            touch dev_deployment  # 배포 확인용 빈 파일 생성 (테스트용)
+            # 개발 애플리케이션 재시작 명령 추가 (필요시)
+          EOF
+        env:
+          DEV_USER: ${{ secrets.DEV_USER }}  # 개발 서버 접속 계정
+          DEV_PASSWORD: ${{ secrets.DEV_PASSWORD }}  # 개발 서버 접속 비밀번호
+          DEV_HOST: ${{ secrets.DEV_HOST }}  # 개발 서버 호스트
+          DEV_PATH: ${{ secrets.DEV_PATH }}  # 개발 서버의 애플리케이션 경로
+          DEV_PORT: ${{ secrets.DEV_PORT }}  # 개발 서버 SSH 접속 포트
