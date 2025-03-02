@@ -53,4 +53,4 @@ jobs:
           DEV_USER: ${{ secrets.DEV_USER }}  # 개발 서버 접속 계정
           DEV_PASSWORD: ${{ secrets.DEV_PASSWORD }}  # 개발 서버 접속 비밀번호
           DEV_HOST: ${{ secrets.DEV_HOST }}  # 개발 서버 호스트
-          DEV_PATH: ${{ secrets.DEV_PATH }}  # 개발 서버의 애플리케이션 경로
+          DEV_PORT: ${{ secrets.DEV_PORT }}  # 개발 서버 SSH 접속 포트
