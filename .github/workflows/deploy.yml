@@ -48,8 +48,7 @@ jobs:
             cd ~/aws  # 개발 서버의 지정된 경로로 이동
             touch dev_deployment1  # 배포 확인용 빈 파일 생성 (테스트용)
             chmod +x start.sh
-            nohup ./start.sh &  # start.sh를 백그라운드에서 실행
-            disown  # 프로세스를 현재 셸 세션과 분리
+            nohup ./start.sh &  # start.sh를 백그라운드에서 실행            
             exit  # SSH 세션 종료
             # 개발 애플리케이션 재시작 명령 추가 (필요시)
           EOF
