@@ -24,7 +24,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${AWS_PROD_USER}@${AWS_PROD_HOST} << 'EOF'
             cd ~/aws  # 운영 서버의 지정된 경로로 이동
-            sudo chmod -R 777 app log_deploy src start.sh
+            sudo chmod -R 777 src start.sh
             nohup ./start.sh > /dev/null 2>&1 &
 
           EOF
@@ -34,7 +34,7 @@ jobs:
 
   deploy-dev:
     if: github.ref == 'refs/heads/dev'  # 'dev' 브랜치에서 실행될 경우에만 수행
-    runs-on: ubuntu-latest  # 실행 환경 지정 
+    runs-on: ubuntu-latest  # 실행 환경 지정
 
     steps:
       - name: Checkout code  # 최신 코드 가져오기
@@ -47,7 +47,7 @@ jobs:
         run: |
           sshpass -p "${DEV_PASSWORD}" ssh -p ${DEV_PORT} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_HOST} << 'EOF'
             cd ~/aws  # 개발 서버의 지정된 경로로 이동            
-            chmod -R 777 app log_deploy src start.sh
+            chmod -R 777 src start.sh
             nohup ./start.sh > /dev/null 2>&1 &
             
           EOF
